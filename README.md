@@ -1,1 +1,7 @@
-# TP-Lenguajes-Formales-y-Automatas
+# TP Lenguajes Formales y Autómatas
+## Integrantes
+- Carena Pablo
+- Cominotti Mauro
+- Yacovino Juan
+
+
