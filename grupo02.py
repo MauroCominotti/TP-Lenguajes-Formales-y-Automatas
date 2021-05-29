@@ -1,33 +1,41 @@
 import ply.lex as lex
 
+
 tokens = [
     'ID',
-    'NUMBER',
-    'LPAREN',  # Parentesis que abre
-    'RPAREN',  # Parentesis que cierra
-    'COMMA',  # Coma
-    'SEMMICOLOM',  # Punto y Coma
-    'DOT',  # Punto
-    'EQ',  # Comprueba que 2 expresiones son iguales
-    'NE',  # Comprueba que 2 expresiones no son iguales
-    'LT',  # Comprueba que la expresión de la izquierda es menor que la expresión de la derecha
-    'LTE',  # Comprueba que la expresión de la izquierda es menor o igual que la expresión de la derecha
-    'GT',  # Comprueba que la expresión de la izquierda es mayor que la expresión de la derecha
-    'GTE'  # Comprueba que la expresión de la izquierda es mayor o igual que la expresión de la derecha
+    'NUMERO',
+    'PAREN_IZQ',        # '('
+    'PAREN_DER',        # ')'
+    'COMA',             # ','
+    'PUNTOCOMA',        # ';'
+    'PUNTO',            # '.'
+    'IGUAL',            # '='
+    'DESIGUAL',         # '<>'
+    'MENOR_IZQ',        # '<'
+    'MEN_IGUAL_IZQ',    # '<='
+    'MAYOR_IZQ',        # '>'
+    'MAY_IGUAL_IZQ'     # '>='
 ]
 
 reserved = {
-    'select': 'SELECT',
-    'from': 'FROM',
-    'where': 'WHERE',
-    'on': 'ON',
-    'as': 'AS',
-    'group by': 'GROUP_BY',
-    'inner join': 'INNER_JOIN',
-    'left join': 'LEFT_JOIN',
-    'in': 'IN',
-    'oder by': 'ORDER_BY',
-    'having': 'HAVING'
+    'SELECT': 'SELECT',
+    'FROM': 'FROM',
+    'WHERE': 'WHERE',
+    'ON': 'ON',
+    'IN': 'IN',
+    'AS': 'AS',
+    'INNER JOIN': 'INNER_JOIN',
+    'LEFT JOIN': 'LEFT_JOIN',
+    'GROUP BY': 'GROUP_BY',
+    'ORDER BY': 'ORDER_BY',
+    'HAVING': 'HAVING',
+    'MIN': 'MIN',
+    'MAX': 'MAX',
+    'COUNT': 'COUNT',
+    'DISTINCT': 'DISTINCT',
+    'AND': 'AND',
+    'OR': 'OR',
+
 }
 
 tokens = tokens + list(reserved.values())
@@ -39,7 +47,7 @@ def t_ID(t):
     return t
 
 
-def t_NUMBER(t):
+def t_NUMERO(t):
     r'\d+'  # El mas indica 1 o mas veces
     t.value = int(t.value)
     return t
@@ -58,31 +66,32 @@ def t_error(t):
 # A string containing ignored characters (spaces and tabs)
 t_ignore = ' \t'
 # Regular expression rules for simple tokens
-t_LPAREN = r'\('
-t_RPAREN = r'\)'
-t_COMMA = r','
-t_SEMMICOLOM = r';'
-t_DOT = r'\.'
-t_EQ = r'='
-t_NE = r'<>'
-t_LT = r'<'
-t_LTE = r'<='
-t_GT = r'>'
-t_GTE = r'>='
+t_PAREN_IZQ = r'\('
+t_PAREN_DER = r'\)'
+t_COMA = r','
+t_PUNTOCOMA = r';'
+t_PUNTO = r'\.'
+t_IGUAL = r'='
+t_DESIGUAL = r'<>'
+t_MENOR_IZQ = r'<'
+t_MEN_IGUAL_IZQ = r'<='
+t_MAYOR_IZQ = r'>'
+t_MAY_IGUAL_IZQ = r'>='
 
 # Build the lexer
 lexer = lex.lex()
 
-# data = 'select P.apellido as perro, P.nombre from persona as P'
-# lexer.input(data)
+data = 'select P.apellido as perro, P.nombre from persona as P, WHERE count max min and or'
+lexer.input(data)
 
-# while True:
-#     token = lexer.token()
-#     if not token:
-#         break
-#     print(token)
+while True:
+    token = lexer.token()
+    if not token:
+        break
+    print(token)
 
 
+"""
 def p_parse_select_statement(p):
     "expression : SELECT ID FROM ID"
     p[0] = p[1]
@@ -107,3 +116,4 @@ while True:
     if not s:
         continue
     yacc.parse(s)
+"""
