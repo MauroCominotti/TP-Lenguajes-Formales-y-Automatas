@@ -1,20 +1,22 @@
 import ply.lex as lex
 
+diccionario_tablas = {}
+diccionario_columnas = {}
 
 tokens = [
     'ID',
     'NUMERO',
-    'PAREN_IZQ',        # '('
-    'PAREN_DER',        # ')'
-    'COMA',             # ','
-    'PUNTOCOMA',        # ';'
-    'PUNTO',            # '.'
-    'IGUAL',            # '='
-    'DESIGUAL',         # '<>'
-    'MENOR_IZQ',        # '<'
-    'MEN_IGUAL_IZQ',    # '<='
-    'MAYOR_IZQ',        # '>'
-    'MAY_IGUAL_IZQ'     # '>='
+    'PAREN_IZQ',  # '('
+    'PAREN_DER',  # ')'
+    'COMA',  # ','
+    'PUNTOCOMA',  # ';'
+    'PUNTO',  # '.'
+    'IGUAL',  # '='
+    'DESIGUAL',  # '<>'
+    'MENOR_IZQ',  # '<'
+    'MEN_IGUAL_IZQ',  # '<='
+    'MAYOR_IZQ',  # '>'
+    'MAY_IGUAL_IZQ'  # '>='
 ]
 
 reserved = {
@@ -81,20 +83,86 @@ t_MAY_IGUAL_IZQ = r'>='
 # Build the lexer
 lexer = lex.lex()
 
-data = 'select P.apellido as perro, P.nombre from persona as P, WHERE count max min and or'
-lexer.input(data)
 
-while True:
-    token = lexer.token()
-    if not token:
-        break
-    print(token)
+# data = 'select P.apellido as perro, P.nombre from persona as P, WHERE count max min and or'
+# lexer.input(data)
+
+# while True:
+#     token = lexer.token()
+#     if not token:
+#         break
+#     print(token)
+
+def p_query(p):
+    '''query : SELECT columnas FROM tablas
+             | SELECT columnas FROM tablas WHERE condicion'''
 
 
-"""
-def p_parse_select_statement(p):
-    "expression : SELECT ID FROM ID"
-    p[0] = p[1]
+def p_columnas(p):
+    '''columnas : columna
+                   | columna COMA columna'''
+
+
+def p_columna_con_tabla_antepuesta(p):
+    '''columna : ID PUNTO ID
+               | ID PUNTO ID AS ID'''
+    if len(p) == 4:
+        print("p_columna_con_tabla_antepuesta   ", p[1], p[2], p[3])
+    else:
+        print("p_columna_con_tabla_antepuesta   ", p[1], p[2], p[3], p[4])
+
+        #    if diccionario_columnas is None:
+    diccionario_columnas.setdefault(p[1], p[3])
+
+    # diccionario_columnas[p[1]] = [ p[3] ]
+    #  else:
+    # diccionario_columnas[p[1]].append(p[3])
+    print("DICCIONARIO COLUMNA 1", diccionario_columnas)
+    print("DICCIONARIO TABLA 1", diccionario_tablas)
+
+
+#   for elemento in diccionario_tablas:
+#        print(diccionario_tablas)
+
+#    for x, y in enumerate(diccionario_tablas):
+#       print("DICCIONARIO", x, y)
+
+# list(filter((lambda x: x[0] == p[1]), range(diccionario_tablas)))
+
+
+def p_tablas(p):
+    '''tablas : tabla
+              | tabla COMA tabla'''
+
+
+def p_tabla_con_alias(p):
+    '''tabla : ID AS ID
+             | ID ID'''
+    if len(p) == 3:
+        print("p_tabla_con_alias   ", p[1], p[2])
+        alias_tabla = p[2]
+
+    else:
+        print("p_tabla_con_alias   ", p[1], p[2], p[3])
+        alias_tabla = p[3]
+
+    nombre_tabla = p[1]
+    diccionario_tablas.setdefault((nombre_tabla, alias_tabla), {})
+    print("DICCIONARIO COLUMNA 2", diccionario_columnas)
+    print("DICCIONARIO TABLA 2", diccionario_tablas)
+
+    for x, y in diccionario_tablas:
+        if y == alias_tabla:
+            diccionario_tablas[(x, y)] = diccionario_columnas[alias_tabla]
+        print("NUEVO DICCIONARIO TABLAS: ", diccionario_tablas)
+
+
+def p_condicion(p):
+    '''condicion : columnas IGUAL columnas'''
+
+
+# if p[1] == 'as':
+#     print(p[1], p[2])
 
 
 def p_error(p):
@@ -116,4 +184,3 @@ while True:
     if not s:
         continue
     yacc.parse(s)
-"""
