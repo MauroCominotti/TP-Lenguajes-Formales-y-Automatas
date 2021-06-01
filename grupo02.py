@@ -11,6 +11,7 @@ tokens = [
     'COMA',  # ','
     'PUNTOCOMA',  # ';'
     'PUNTO',  # '.'
+    'COMILLA',  # ' " '
     'IGUAL',  # '='
     'DESIGUAL',  # '<>'
     'MENOR_IZQ',  # '<'
@@ -37,7 +38,13 @@ reserved = {
     'DISTINCT': 'DISTINCT',
     'AND': 'AND',
     'OR': 'OR',
-
+    'NULL': 'NULL',
+    'NOT': 'NOT',
+    'IS': 'IS',
+    'ASC': 'ASC',
+    'DESC': 'DESC',
+    'TRUE': 'TRUE',
+    'FALSE': 'FALSE'
 }
 
 tokens = tokens + list(reserved.values())
@@ -73,6 +80,7 @@ t_PAREN_DER = r'\)'
 t_COMA = r','
 t_PUNTOCOMA = r';'
 t_PUNTO = r'\.'
+t_COMILLA = r'"'
 t_IGUAL = r'='
 t_DESIGUAL = r'<>'
 t_MENOR_IZQ = r'<'
