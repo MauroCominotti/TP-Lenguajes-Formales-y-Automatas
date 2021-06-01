@@ -68,8 +68,8 @@ query : SELECT columnas FROM tablas
 columnas : columna 
          | columna COMA columnas
 columna : ID PUNTO ID 
-        | ID PUNTO ID AS " ID "
-        | func_resumen AS " ID "
+        | ID PUNTO ID AS COMILLA ID COMILLA
+        | func_resumen AS COMILLA ID COMILLA
 columnas_group_by : ID PUNTO ID
                   | ID PUNTO ID COMA columnas_group_by
 columnas_order_by : ID PUNTO ID orden
@@ -79,10 +79,10 @@ orden : ASC
       | DESC
 condicion_having : func_resumen signo valor
 
-func_resumen : MIN ( ID PUNTO ID )
-             | MAX ( ID PUNTO ID )
-             | COUNT ( ID PUNTO ID )
-             | COUNT ( DISTINCT ID PUNTO ID )
+func_resumen : MIN PAREN_IZQ ID PUNTO ID PAREN_DER
+             | MAX PAREN_IZQ ID PUNTO ID PAREN_DER
+             | COUNT PAREN_IZQ ID PUNTO ID PAREN_DER
+             | COUNT PAREN_IZQ DISTINCT ID PUNTO ID PAREN_DER
 
 tablas : tabla 
        | tabla COMA tabla
@@ -96,10 +96,10 @@ condiciones : condicion
             | ID PUNTO ID subconsulta
             | condiciones AND condiciones
             | condiciones OR condiciones
-            | ( condiciones OR condiciones )
+            | PAREN_IZQ condiciones OR condiciones PAREN_DER
 
-subconsulta : IN ( query )
-            | NOT IN ( query )
+subconsulta : IN PAREN_IZQ query PAREN_DER
+            | NOT IN PAREN_IZQ query PAREN_DER
 
 condicion : ID PUNTO ID SIGNO VALOR
           | ID PUNTO ID SIGNO ID PUNTO ID
@@ -108,8 +108,14 @@ condicion : ID PUNTO ID SIGNO VALOR
 
 signo : < | > | <= | >= | = | <>
 valor : ID
-      | NRO
+      | NUMERO
 nulleable : NULL
           | IS NOT NULL
 booleano : TRUE
          | FALSE
+
+
+### EJEMPLOS PARA PROBAR
+python grupo02.py
+
+SELECT P.nombre, P.apellido FROM Personas P INNER JOIN Empleados E ON E.Dni = P.Dni WHERE condiciones GROUP BY P.nombre, P.apellido, P.dni, P.Sectores HAVING COUNT(P.sectores) ORDER BY P.nombre DESC
