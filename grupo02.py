@@ -27,7 +27,9 @@ reserved = {
     'ON': 'ON',
     'IN': 'IN',
     'AS': 'AS',
-    'INNER JOIN': 'INNER_JOIN',
+    # 'INNER JOIN': 'INNER_JOIN',
+    'INNER': 'INNER',
+    'JOIN': 'JOIN',
     'LEFT JOIN': 'LEFT_JOIN',
     'GROUP BY': 'GROUP_BY',
     'ORDER BY': 'ORDER_BY',
@@ -101,9 +103,9 @@ lexer = lex.lex()
 def p_query(p):
     '''query : SELECT columnas FROM tablas
       | SELECT columnas FROM tablas joins WHERE condiciones
-      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
-      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
-      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by'''
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by HAVING condicion_having
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by HAVING condicion_having ORDER_BY columnas_order_by'''
 
 def p_columnas(p):
     '''columnas : columna
@@ -158,6 +160,8 @@ def p_tabla(p):
     for x, y in diccionario_tablas:
         if y == alias_tabla:
             diccionario_tablas[(x, y)] = diccionario_columnas[alias_tabla]
+            # Error when executing the INNER JOIN due to the fact that we have the table Empleados E,
+            # but we don't have the field E.Dni, like in the SELECT
         print("NUEVO DICCIONARIO TABLAS: ", diccionario_tablas)
 
 def p_joins(p):
@@ -211,7 +215,7 @@ def p_columnas_group_by(p):
 
 def p_columnas_order_by(p):
     '''columnas_order_by : ID PUNTO ID orden
-                         | ID PUNTO ID orden COMMA columnas_order_by'''
+                         | ID PUNTO ID orden COMA columnas_order_by'''
 
 def p_orden(p):
     '''orden : ASC
