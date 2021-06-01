@@ -60,10 +60,10 @@ No terminales: Minuscula
 
 
 query : SELECT columnas FROM tablas
-	  | SELECT columnas FROM tablas joins WHERE condiciones
-	  | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
-	  | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
-	  | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
+      | SELECT columnas FROM tablas joins WHERE condiciones
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
 
 columnas : columna 
          | columna COMA columnas
@@ -104,9 +104,9 @@ subconsulta : IN PAREN_IZQ query PAREN_DER
 condicion : ID PUNTO ID SIGNO VALOR
           | ID PUNTO ID SIGNO ID PUNTO ID
           | ID PUNTO ID nulleable
-          | ID PUNTO ID = booleano
+          | ID PUNTO ID IGUAL booleano
 
-signo : < | > | <= | >= | = | <>
+signo : MENOR_IZQ | MAYOR_IZQ | MEN_IGUAL_IZQ | MAY_IGUAL_IZQ | IGUAL | DESIGUAL
 valor : ID
       | NUMERO
 nulleable : NULL

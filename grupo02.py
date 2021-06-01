@@ -55,17 +55,14 @@ def t_ID(t):
     t.type = reserved.get(t.value, 'ID')
     return t
 
-
 def t_NUMERO(t):
     r'\d+'  # El mas indica 1 o mas veces
     t.value = int(t.value)
     return t
 
-
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-
 
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
@@ -103,21 +100,22 @@ lexer = lex.lex()
 
 def p_query(p):
     '''query : SELECT columnas FROM tablas
-             | SELECT columnas FROM tablas WHERE condicion'''
-
+      | SELECT columnas FROM tablas joins WHERE condiciones
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by'''
 
 def p_columnas(p):
     '''columnas : columna
-                   | columna COMA columna'''
+                | columna COMA columnas'''
 
-
-def p_columna_con_tabla_antepuesta(p):
+def p_columna(p):
     '''columna : ID PUNTO ID
-               | ID PUNTO ID AS ID'''
+               | ID PUNTO ID AS COMILLA ID COMILLA'''
     if len(p) == 4:
-        print("p_columna_con_tabla_antepuesta   ", p[1], p[2], p[3])
+        print("p_columna   ", p[1], p[2], p[3])
     else:
-        print("p_columna_con_tabla_antepuesta   ", p[1], p[2], p[3], p[4])
+        print("p_columna   ", p[1], p[2], p[3], p[4])
 
         #    if diccionario_columnas is None:
     diccionario_columnas.setdefault(p[1], p[3])
@@ -137,21 +135,19 @@ def p_columna_con_tabla_antepuesta(p):
 
 # list(filter((lambda x: x[0] == p[1]), range(diccionario_tablas)))
 
-
 def p_tablas(p):
     '''tablas : tabla
               | tabla COMA tabla'''
 
-
-def p_tabla_con_alias(p):
+def p_tabla(p):
     '''tabla : ID AS ID
              | ID ID'''
     if len(p) == 3:
-        print("p_tabla_con_alias   ", p[1], p[2])
+        print("p_tabla   ", p[1], p[2])
         alias_tabla = p[2]
 
     else:
-        print("p_tabla_con_alias   ", p[1], p[2], p[3])
+        print("p_tabla   ", p[1], p[2], p[3])
         alias_tabla = p[3]
 
     nombre_tabla = p[1]
@@ -164,13 +160,71 @@ def p_tabla_con_alias(p):
             diccionario_tablas[(x, y)] = diccionario_columnas[alias_tabla]
         print("NUEVO DICCIONARIO TABLAS: ", diccionario_tablas)
 
+def p_joins(p):
+    '''joins : INNER JOIN tabla ON condiciones'''
+
+def p_condiciones(p):
+    '''condiciones : condicion
+                   | ID PUNTO ID subconsulta
+                   | condiciones AND condiciones
+                   | condiciones OR condiciones
+                   | PAREN_IZQ condiciones OR condiciones PAREN_DER'''
 
 def p_condicion(p):
-    '''condicion : columnas IGUAL columnas'''
+    '''condicion : ID PUNTO ID signo valor
+                 | ID PUNTO ID signo ID PUNTO ID
+                 | ID PUNTO ID nulleable
+                 | ID PUNTO ID IGUAL booleano'''
 
+def p_signo(p):
+    '''signo : MENOR_IZQ 
+             | MAYOR_IZQ 
+             | MEN_IGUAL_IZQ 
+             | MAY_IGUAL_IZQ 
+             | IGUAL 
+             | DESIGUAL'''
+
+def p_valor(p):
+    '''valor : ID 
+             | NUMERO'''
+
+def p_nulleable(p):
+    '''nulleable : NULL
+                 | IS NOT NULL'''
+
+def p_booleano(p):
+    '''booleano : TRUE
+                | FALSE'''
+
+
+def p_subconsulta(p):
+    '''subconsulta : IN PAREN_IZQ query PAREN_DER
+                   | NOT IN PAREN_IZQ query PAREN_DER'''
 
 # if p[1] == 'as':
 #     print(p[1], p[2])
+
+def p_columnas_group_by(p):
+    '''columnas_group_by : ID PUNTO ID
+                         | ID PUNTO ID COMA columnas_group_by'''
+
+
+def p_columnas_order_by(p):
+    '''columnas_order_by : ID PUNTO ID orden
+                         | ID PUNTO ID orden COMMA columnas_order_by'''
+
+def p_orden(p):
+    '''orden : ASC
+             | DESC'''
+
+def p_condicion_having(p):
+    '''condicion_having : func_resumen signo valor'''
+
+def p_func_resumen(p):
+    '''func_resumen : MIN PAREN_IZQ ID PUNTO ID PAREN_DER
+                    | MAX PAREN_IZQ ID PUNTO ID PAREN_DER
+                    | COUNT PAREN_IZQ ID PUNTO ID PAREN_DER
+                    | COUNT PAREN_IZQ DISTINCT ID PUNTO ID PAREN_DER'''
 
 
 def p_error(p):
