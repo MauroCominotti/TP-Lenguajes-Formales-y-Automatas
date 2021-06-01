@@ -51,14 +51,14 @@ c.	Desarrolle una función denominada parse_select_statement que reciba como par
 -	Los integrantes de cada grupo se deben comunicar antes del 23/04/2021 en el foro de la materia. El orden en el que se envíe esa comunicación definirá el número de grupo (ejemplo: el primero en enviar será automáticamente el grupo 1, y así sucesivamente).
 
 ### Anotaciones
->USAR TRANSACT SQL, Usar solo tipos de datos "strings" y "numeros", y por más que se genere una tabla usamos siempre el alias (una vez que tenemos los alias una vez que reconocemos las columnas decimos tal columna es de tal tabla); el AS puede ir como no; el DISTINCT en el SELECT NO VA; el JOIN va solo INNER o LEFT; al usar desigualdad usamos tenemos que ver si usamos el "!=", no usamos el "IS NOT"; en el SELECT pueden NO estar columnas que se toman en el GROUP BY, eso es el análisis semántico, se ocupará otro analizador; palabras reservadas siempre con MAYUSCULAS
+> USAR TRANSACT SQL, Usar solo tipos de datos "strings" y "numeros", y por más que se genere una tabla usamos siempre el alias (una vez que tenemos los alias una vez que reconocemos las columnas decimos tal columna es de tal tabla); el AS puede ir como no; el DISTINCT en el SELECT NO VA; el JOIN va solo INNER o LEFT; al usar desigualdad usamos tenemos que ver si usamos el "!=", no usamos el "IS NOT"; en el SELECT pueden NO estar columnas que se toman en el GROUP BY, eso es el análisis semántico, se ocupará otro analizador; palabras reservadas siempre con MAYUSCULAS
 
 
 ### GRAMÁTICA
 Terminales: Mayuscula
 No terminales: Minuscula
 
-
+```SQL
 query : SELECT columnas FROM tablas
       | SELECT columnas FROM tablas joins WHERE condiciones
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
@@ -119,3 +119,5 @@ booleano : TRUE
 python grupo02.py
 
 SELECT P.nombre, P.apellido FROM Personas P INNER JOIN Empleados E ON E.Dni = P.Dni WHERE condiciones GROUP BY P.nombre, P.apellido, P.dni, P.Sectores HAVING COUNT(P.sectores) ORDER BY P.nombre DESC
+
+```
