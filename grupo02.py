@@ -127,7 +127,7 @@ def p_columna(p):
         else:
             # Creo un nuevo registro ya que no existe
             diccionario_columnas[key] = [column1]
-    # TODO > Por que tengo que guardar el alias de la columna?????
+    # TODO > Por que tengo que guardar el alias de la columna????? Tenemos que imprimir el alias?
     # else:
     #     column2 = p[6] if p[1] != 'DISTINCT' else p[7]
     #     if key in diccionario_columnas:
