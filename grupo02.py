@@ -47,8 +47,8 @@ reserved = {
     'IS': 'IS',
     'ASC': 'ASC',
     'DESC': 'DESC',
-    'TRUE': 'TRUE',
-    'FALSE': 'FALSE'
+    '0': 'TRUE',
+    '1': 'FALSE'
 }
 
 tokens = tokens + list(reserved.values())
@@ -62,6 +62,8 @@ def t_ID(t):
 
 def t_NUMERO(t):
     r'\d+'  # El mas indica 1 o mas veces
+    t.type = reserved.get(t.value, 'NUMERO')
+
     t.value = int(t.value)
     return t
 
@@ -98,6 +100,7 @@ lexer = lex.lex()
 
 def p_query(p):
     '''query : SELECT columnas FROM tablas
+      | SELECT columnas FROM tablas WHERE condiciones
       | SELECT columnas FROM tablas joins WHERE condiciones
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by HAVING condicion_having
@@ -242,6 +245,7 @@ def parse_select_statement(s):
     for z, y in diccionario_tablas.keys():
         if y in diccionario_columnas.keys():
             diccionario_final.setdefault((z, y), diccionario_columnas[y])
+            diccionario_final[(z, y)] = sorted(diccionario_final.get((z, y)))
     return diccionario_final
 
 
@@ -257,4 +261,5 @@ if __name__ == '__main__':
         yacc.parse(s)
         result = parse_select_statement(s)
         for element in result:
-            print(element, ':', sorted(diccionario_final.get(element)))
+            print(element, ':', diccionario_final.get(element))
+
