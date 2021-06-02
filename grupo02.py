@@ -157,7 +157,7 @@ def p_tabla(p):
             alias_tabla = 'None'
 
     nombre_tabla = p[1]
-    diccionario_tablas.setdefault((nombre_tabla, alias_tabla), {})
+    diccionario_tablas.setdefault(nombre_tabla, alias_tabla)
 
 
 def p_joins(p):
@@ -268,7 +268,7 @@ def parse_select_statement(s):
     diccionario_final = {}
     yacc.yacc()
     yacc.parse(s)
-    for z, y in diccionario_tablas.keys(): # TODO: Nos quedo diccionario_tablas mal formado
+    for z, y in diccionario_tablas.items():
         if y in diccionario_columnas.keys():
             diccionario_final.setdefault(z, diccionario_columnas[y])
             diccionario_final[z] = sorted(diccionario_final.get(z))
