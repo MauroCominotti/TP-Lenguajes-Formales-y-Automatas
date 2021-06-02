@@ -60,6 +60,7 @@ No terminales: Minuscula
 
 ```SQL
 query : SELECT columnas FROM tablas
+      | SELECT columnas FROM tablas WHERE condiciones
       | SELECT columnas FROM tablas joins WHERE condiciones
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
@@ -116,8 +117,12 @@ booleano : TRUE
 
 
 ### EJEMPLOS PARA PROBAR
+
 python grupo02.py
 
-SELECT P.nombre, P.apellido FROM Personas P INNER JOIN Empleados E ON E.Dni = P.Dni WHERE condiciones GROUP BY P.nombre, P.apellido, P.dni, P.Sectores HAVING COUNT(P.sectores) ORDER BY P.nombre DESC
+SELECT P.nombre, P.apellido, E.departamento FROM Personas P, Empleados E INNER JOIN Empleados E ON E.Dni = P.Dni WHERE P.nombre = P.apellido GROUP BY P.nombre, P.apellido, P.dni, P.Sectores HAVING COUNT(P.sectores) > 10 ORDER BY P.nombre DESC
+
+
+SELECT DISTINCT c.first_name, c.last_name, p.number FROM customers AS c LEFT JOIN phones_numbers AS p ON c.id = p.customer_id
 
 ```

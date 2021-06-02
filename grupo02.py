@@ -3,7 +3,6 @@ import ply.yacc as yacc
 
 diccionario_tablas = {}
 diccionario_columnas = {}
-diccionario_final = {}
 
 tokens = [
     'ID',
@@ -11,7 +10,6 @@ tokens = [
     'PAREN_IZQ',  # '('
     'PAREN_DER',  # ')'
     'COMA',  # ','
-    'PUNTOCOMA',  # ';'
     'PUNTO',  # '.'
     'COMILLA',  # ' " '
     'IGUAL',  # '='
@@ -29,12 +27,12 @@ reserved = {
     'ON': 'ON',
     'IN': 'IN',
     'AS': 'AS',
-    # 'INNER JOIN': 'INNER_JOIN',
     'INNER': 'INNER',
     'JOIN': 'JOIN',
     'LEFT': 'LEFT',
-    'GROUP BY': 'GROUP_BY',
-    'ORDER BY': 'ORDER_BY',
+    'GROUP': 'GROUP',
+    'ORDER': 'ORDER',
+    'BY': 'BY',
     'HAVING': 'HAVING',
     'MIN': 'MIN',
     'MAX': 'MAX',
@@ -84,7 +82,6 @@ t_ignore = ' \t'
 t_PAREN_IZQ = r'\('
 t_PAREN_DER = r'\)'
 t_COMA = r','
-t_PUNTOCOMA = r';'
 t_PUNTO = r'\.'
 t_COMILLA = r'"'
 t_IGUAL = r'='
@@ -100,11 +97,14 @@ lexer = lex.lex()
 
 def p_query(p):
     '''query : SELECT columnas FROM tablas
-      | SELECT columnas FROM tablas WHERE condiciones
-      | SELECT columnas FROM tablas joins WHERE condiciones
-      | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by
-      | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by HAVING condicion_having
-      | SELECT columnas FROM tablas joins WHERE condiciones GROUP_BY columnas_group_by HAVING condicion_having ORDER_BY columnas_order_by'''
+             | SELECT columnas FROM tablas WHERE condiciones
+             | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by
+             | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+             | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
+             | SELECT columnas FROM tablas joins WHERE condiciones
+             | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
+             | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+             | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by'''
 
 
 def p_columnas(p):
@@ -114,24 +114,28 @@ def p_columnas(p):
 
 def p_columna(p):
     '''columna : ID PUNTO ID
-               | ID PUNTO ID AS COMILLA ID COMILLA'''
-    key = p[1]
-    if len(p) == 4:
-        column1 = p[3]
+               | ID PUNTO ID AS COMILLA ID COMILLA
+               | DISTINCT ID PUNTO ID 
+               | DISTINCT ID PUNTO ID AS COMILLA ID COMILLA'''
+    key = p[1] if p[1] != 'DISTINCT' else p[2]
+    if len(p) == 4 or len(p) == 5:
+        column1 = p[3] if p[1] != 'DISTINCT' else p[4]
         if key in diccionario_columnas:
-            # Actualizo registro existente
-            diccionario_columnas[key].append(column1)
+            if column1 not in diccionario_columnas[key]:
+                # Actualizo registro existente si no está en el array
+                diccionario_columnas[key].append(column1)
         else:
             # Creo un nuevo registro ya que no existe
             diccionario_columnas[key] = [column1]
-    else:
-        column2 = p[6]
-        if key in diccionario_columnas:
-            # Actualizo registro existente
-            diccionario_columnas[key].append(column2)
-        else:
-            # Creo un nuevo registro ya que no existe
-            diccionario_columnas[key] = [column2]
+    # TODO > Por que tengo que guardar el alias de la columna?????
+    # else:
+    #     column2 = p[6] if p[1] != 'DISTINCT' else p[7]
+    #     if key in diccionario_columnas:
+    #         # Actualizo registro existente
+    #         diccionario_columnas[key].append(column2)
+    #     else:
+    #         # Creo un nuevo registro ya que no existe
+    #         diccionario_columnas[key] = [column2]
 
 
 def p_tablas(p):
@@ -174,7 +178,25 @@ def p_condicion(p):
                  | ID PUNTO ID signo ID PUNTO ID
                  | ID PUNTO ID nulleable
                  | ID PUNTO ID IGUAL booleano'''
-
+    key = p[1]
+    column1 = p[3]
+    if key in diccionario_columnas:
+        if column1 not in diccionario_columnas[key]:
+            # Actualizo registro existente si no está en el array
+            diccionario_columnas[key].append(column1)
+    else:
+        # Creo un nuevo registro ya que no existe
+        diccionario_columnas[key] = [column1]
+    if len(p) == 8:
+        key = p[5]
+        column2 = p[7]
+        if key in diccionario_columnas:
+            if column2 not in diccionario_columnas[key]:
+                # Actualizo registro existente si no está en el array
+                diccionario_columnas[key].append(column2)
+        else:
+            # Creo un nuevo registro ya que no existe
+            diccionario_columnas[key] = [column2]
 
 def p_signo(p):
     '''signo : MENOR_IZQ 
@@ -224,7 +246,8 @@ def p_orden(p):
 
 
 def p_condicion_having(p):
-    '''condicion_having : func_resumen signo valor'''
+    '''condicion_having : func_resumen signo valor
+                        | func_resumen signo func_resumen'''
 
 
 def p_func_resumen(p):
@@ -242,13 +265,17 @@ def p_error(p):
 
 
 def parse_select_statement(s):
-    for z, y in diccionario_tablas.keys():
+    diccionario_final = {}
+    yacc.yacc()
+    yacc.parse(s)
+    for z, y in diccionario_tablas.keys(): # TODO: Nos quedo diccionario_tablas mal formado
         if y in diccionario_columnas.keys():
-            diccionario_final.setdefault((z, y), diccionario_columnas[y])
-            diccionario_final[(z, y)] = sorted(diccionario_final.get((z, y)))
+            diccionario_final.setdefault(z, diccionario_columnas[y])
+            diccionario_final[z] = sorted(diccionario_final.get(z))
     return diccionario_final
 
 
+# If you want to test it in local just descomment this
 if __name__ == '__main__':
     parser = yacc.yacc()
     while True:
@@ -260,6 +287,8 @@ if __name__ == '__main__':
             continue
         yacc.parse(s)
         result = parse_select_statement(s)
-        for element in result:
-            print(element, ':', diccionario_final.get(element))
+        print(result)
+
+
+
 
