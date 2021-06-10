@@ -2,9 +2,6 @@ import ply.lex as lex
 import ply.yacc as yacc
 import sys
 
-diccionario_tablas = {}
-diccionario_columnas = {}
-
 tokens = [
     'ID',
     'NUMERO',
@@ -96,15 +93,36 @@ t_MAY_IGUAL_IZQ = r'>='
 lexer = lex.lex()
 
 
+def addColumns(key, column):
+    if key in yacc.diccionario_columnas:
+        if column not in yacc.diccionario_columnas[key]:
+            # Actualizo registro existente si no está en el array
+            yacc.diccionario_columnas[key].append(column)
+    else:
+        # Creo un nuevo registro ya que no existe
+        yacc.diccionario_columnas[key] = [column]
+
+
 def p_query(p):
     '''query : SELECT columnas FROM tablas
+             | SELECT columnas FROM tablas GROUP BY columnas_group_by
+             | SELECT columnas FROM tablas GROUP BY columnas_group_by HAVING condicion_having
+             | SELECT columnas FROM tablas GROUP BY columnas_group_by ORDER BY columnas_order_by
+             | SELECT columnas FROM tablas GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
              | SELECT columnas FROM tablas WHERE condiciones
              | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by
              | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+             | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by ORDER BY columnas_order_by
              | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
+             | SELECT columnas FROM tablas joins
+             | SELECT columnas FROM tablas joins GROUP BY columnas_group_by
+             | SELECT columnas FROM tablas joins GROUP BY columnas_group_by HAVING condicion_having
+             | SELECT columnas FROM tablas joins GROUP BY columnas_group_by ORDER BY columnas_order_by
+             | SELECT columnas FROM tablas joins GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
              | SELECT columnas FROM tablas joins WHERE condiciones
              | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
              | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+             | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by ORDER BY columnas_order_by
              | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by'''
 
 
@@ -116,29 +134,15 @@ def p_columnas(p):
 def p_columna(p):
     '''columna : ID PUNTO ID
                | ID PUNTO ID AS COMILLA ID COMILLA
-               | DISTINCT ID PUNTO ID 
+               | DISTINCT ID PUNTO ID
                | DISTINCT ID PUNTO ID AS COMILLA ID COMILLA
                | func_resumen AS COMILLA ID COMILLA'''
     if p[1 != 'MIN'] or p[1 != 'MAX'] or p[1 != 'COUNT']:
+        # TODO: View this func_resumen
         key = p[1] if p[1] != 'DISTINCT' else p[2]
         if len(p) == 4 or len(p) == 5:
             column1 = p[3] if p[1] != 'DISTINCT' else p[4]
-            if key in diccionario_columnas:
-                if column1 not in diccionario_columnas[key]:
-                    # Actualizo registro existente si no está en el array
-                    diccionario_columnas[key].append(column1)
-            else:
-                # Creo un nuevo registro ya que no existe
-                diccionario_columnas[key] = [column1]
-        # TODO > Por que tengo que guardar el alias de la columna????? Tenemos que imprimir el alias?
-        # else:
-        #     column2 = p[6] if p[1] != 'DISTINCT' else p[7]
-        #     if key in diccionario_columnas:
-        #         # Actualizo registro existente
-        #         diccionario_columnas[key].append(column2)
-        #     else:
-        #         # Creo un nuevo registro ya que no existe
-        #         diccionario_columnas[key] = [column2]
+            addColumns(key, column1)
 
 
 def p_tablas(p):
@@ -160,7 +164,7 @@ def p_tabla(p):
             alias_tabla = None
 
     nombre_tabla = p[1]
-    diccionario_tablas.setdefault(nombre_tabla, alias_tabla)
+    yacc.diccionario_tablas.setdefault(nombre_tabla, alias_tabla)
 
 
 def p_joins(p):
@@ -183,36 +187,24 @@ def p_condicion(p):
                  | ID PUNTO ID IGUAL booleano'''
     key = p[1]
     column1 = p[3]
-    if key in diccionario_columnas:
-        if column1 not in diccionario_columnas[key]:
-            # Actualizo registro existente si no está en el array
-            diccionario_columnas[key].append(column1)
-    else:
-        # Creo un nuevo registro ya que no existe
-        diccionario_columnas[key] = [column1]
+    addColumns(key, column1)
     if len(p) == 8:
         key = p[5]
         column2 = p[7]
-        if key in diccionario_columnas:
-            if column2 not in diccionario_columnas[key]:
-                # Actualizo registro existente si no está en el array
-                diccionario_columnas[key].append(column2)
-        else:
-            # Creo un nuevo registro ya que no existe
-            diccionario_columnas[key] = [column2]
+        addColumns(key, column2)
 
 
 def p_signo(p):
-    '''signo : MENOR_IZQ 
-             | MAYOR_IZQ 
-             | MEN_IGUAL_IZQ 
-             | MAY_IGUAL_IZQ 
-             | IGUAL 
+    '''signo : MENOR_IZQ
+             | MAYOR_IZQ
+             | MEN_IGUAL_IZQ
+             | MAY_IGUAL_IZQ
+             | IGUAL
              | DESIGUAL'''
 
 
 def p_valor(p):
-    '''valor : ID 
+    '''valor : ID
              | NUMERO'''
 
 
@@ -231,17 +223,21 @@ def p_subconsulta(p):
                    | NOT IN PAREN_IZQ query PAREN_DER'''
 
 
-# if p[1] == 'as':
-#     print(p[1], p[2])
-
 def p_columnas_group_by(p):
     '''columnas_group_by : ID PUNTO ID
                          | ID PUNTO ID COMA columnas_group_by'''
+    key = p[1]
+    column1 = p[3]
+    addColumns(key, column1)
 
 
 def p_columnas_order_by(p):
-    '''columnas_order_by : ID PUNTO ID orden
+    '''columnas_order_by : ID PUNTO ID
+                         | ID PUNTO ID orden
                          | ID PUNTO ID orden COMA columnas_order_by'''
+    key = p[1]
+    column1 = p[3]
+    addColumns(key, column1)
 
 
 def p_orden(p):
@@ -251,7 +247,18 @@ def p_orden(p):
 
 def p_condicion_having(p):
     '''condicion_having : func_resumen signo valor
+                        | valor signo func_resumen
+                        | ID PUNTO ID signo valor
+                        | valor signo ID PUNTO ID
                         | func_resumen signo func_resumen'''
+    if len(p) == 6:
+        if p[2] == '.':
+            key = p[1]
+            column1 = p[3]
+        else:
+            key = p[3]
+            column1 = p[5]
+    addColumns(key, column1)
 
 
 def p_func_resumen(p):
@@ -261,13 +268,7 @@ def p_func_resumen(p):
                     | COUNT PAREN_IZQ DISTINCT ID PUNTO ID PAREN_DER'''
     key = p[3]
     column1 = p[5]
-    if key in diccionario_columnas:
-        if column1 not in diccionario_columnas[key]:
-            # Actualizo registro existente si no está en el array
-            diccionario_columnas[key].append(column1)
-    else:
-        # Creo un nuevo registro ya que no existe
-        diccionario_columnas[key] = [column1]
+    addColumns(key, column1)
 
 
 def p_error(p):
@@ -277,27 +278,50 @@ def p_error(p):
         print("Syntax error at EOF")
 
 
-def parse_select_statement(s):
-    diccionario_final = {}
-    yacc.yacc()
-    yacc.parse(s)
-    for z, y in diccionario_tablas.items():
-        if y is None:
-            if z in diccionario_columnas.keys():
-                diccionario_final.setdefault(z, diccionario_columnas[z])
-                diccionario_final[z] = sorted(diccionario_final.get(z))
-        else:
-            if y in diccionario_columnas.keys():
-                diccionario_final.setdefault(z, diccionario_columnas[y])
-                diccionario_final[z] = sorted(diccionario_final.get(z))
-            else:
-                try:
-                    Ex = ValueError()
-                    Ex.strerror = "El alias de la tabla debe coincidir con lo antepuesto en el campo"
-                    raise Ex
-                except ValueError as e:
-                    print("Excepción!", e.strerror)
+def throwNewError():
+    Ex = ValueError()
+    Ex.strerror = {
+        'message': 'El alias de la tabla debe coincidir con lo antepuesto en el campo. Revea su consulta'}
+    raise Ex
 
+
+def parse_select_statement(s):
+    try:
+        diccionario_final = {}
+        yacc.yacc()
+        # Due to the fact that the global variables are overwritten each time this function executes
+        # we have assigned to an insance of yacc these tables, so the dictionaries are separated
+        yacc.diccionario_tablas = {}
+        yacc.diccionario_columnas = {}
+        yacc.parse(s)
+
+        # FROM customers AS c, personas AS customers
+        for z, y in yacc.diccionario_tablas.items():
+            if y is None:
+                if z in yacc.diccionario_columnas.keys():
+                    diccionario_final.setdefault(
+                        z, yacc.diccionario_columnas[z])
+                    diccionario_final[z] = sorted(diccionario_final.get(z))
+                else:
+                    # If the table is not referenced in the query
+                    throwNewError()
+            else:
+                if y in yacc.diccionario_columnas.keys():
+                    diccionario_final.setdefault(
+                        z, yacc.diccionario_columnas[y])
+                    diccionario_final[z] = sorted(diccionario_final.get(z))
+                else:
+                    # If the table alias is not referenced in the query
+                    throwNewError()
+
+        # Control that the fileds belong to some table or some alias
+        for z, y in yacc.diccionario_columnas.items():
+            if z not in yacc.diccionario_tablas.values() and z not in yacc.diccionario_tablas.keys():
+                # If the table is not referenced in the query
+                throwNewError()
+    except Exception as e:
+        print("Excepción!", e.strerror)
+        return e
     return diccionario_final
 
 
@@ -312,3 +336,4 @@ if __name__ == '__main__':
         if not s:
             continue
         yacc.parse(s)
+        # parse_select_statement(s)
