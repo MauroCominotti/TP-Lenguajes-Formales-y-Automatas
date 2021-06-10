@@ -286,8 +286,6 @@ if __name__ == '__main__':
         if not s:
             continue
         yacc.parse(s)
-        result = parse_select_statement(s)
-        print(result)
 
 
 
