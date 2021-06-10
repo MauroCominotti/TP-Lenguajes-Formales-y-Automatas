@@ -1,5 +1,6 @@
 import ply.lex as lex
 import ply.yacc as yacc
+import sys
 
 diccionario_tablas = {}
 diccionario_columnas = {}
@@ -154,7 +155,7 @@ def p_tabla(p):
             alias_tabla = p[3]
         else:
             # Puede venir sola la tabla?
-            alias_tabla = 'None'
+            alias_tabla = None
 
     nombre_tabla = p[1]
     diccionario_tablas.setdefault(nombre_tabla, alias_tabla)
@@ -197,6 +198,7 @@ def p_condicion(p):
         else:
             # Creo un nuevo registro ya que no existe
             diccionario_columnas[key] = [column2]
+
 
 def p_signo(p):
     '''signo : MENOR_IZQ 
@@ -269,9 +271,22 @@ def parse_select_statement(s):
     yacc.yacc()
     yacc.parse(s)
     for z, y in diccionario_tablas.items():
-        if y in diccionario_columnas.keys():
-            diccionario_final.setdefault(z, diccionario_columnas[y])
-            diccionario_final[z] = sorted(diccionario_final.get(z))
+        if y is None:
+            if z in diccionario_columnas.keys():
+                diccionario_final.setdefault(z, diccionario_columnas[z])
+                diccionario_final[z] = sorted(diccionario_final.get(z))
+        else:
+            if y in diccionario_columnas.keys():
+                diccionario_final.setdefault(z, diccionario_columnas[y])
+                diccionario_final[z] = sorted(diccionario_final.get(z))
+            else:
+                try:
+                    Ex = ValueError()
+                    Ex.strerror = "El alias de la tabla debe coincidir con lo antepuesto en el campo"
+                    raise Ex
+                except ValueError as e:
+                    print("Excepción!", e.strerror)
+
     return diccionario_final
 
 
