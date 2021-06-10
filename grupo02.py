@@ -117,26 +117,28 @@ def p_columna(p):
     '''columna : ID PUNTO ID
                | ID PUNTO ID AS COMILLA ID COMILLA
                | DISTINCT ID PUNTO ID 
-               | DISTINCT ID PUNTO ID AS COMILLA ID COMILLA'''
-    key = p[1] if p[1] != 'DISTINCT' else p[2]
-    if len(p) == 4 or len(p) == 5:
-        column1 = p[3] if p[1] != 'DISTINCT' else p[4]
-        if key in diccionario_columnas:
-            if column1 not in diccionario_columnas[key]:
-                # Actualizo registro existente si no está en el array
-                diccionario_columnas[key].append(column1)
-        else:
-            # Creo un nuevo registro ya que no existe
-            diccionario_columnas[key] = [column1]
-    # TODO > Por que tengo que guardar el alias de la columna????? Tenemos que imprimir el alias?
-    # else:
-    #     column2 = p[6] if p[1] != 'DISTINCT' else p[7]
-    #     if key in diccionario_columnas:
-    #         # Actualizo registro existente
-    #         diccionario_columnas[key].append(column2)
-    #     else:
-    #         # Creo un nuevo registro ya que no existe
-    #         diccionario_columnas[key] = [column2]
+               | DISTINCT ID PUNTO ID AS COMILLA ID COMILLA
+               | func_resumen AS COMILLA ID COMILLA'''
+    if p[1 != 'MIN'] or p[1 != 'MAX'] or p[1 != 'COUNT']:
+        key = p[1] if p[1] != 'DISTINCT' else p[2]
+        if len(p) == 4 or len(p) == 5:
+            column1 = p[3] if p[1] != 'DISTINCT' else p[4]
+            if key in diccionario_columnas:
+                if column1 not in diccionario_columnas[key]:
+                    # Actualizo registro existente si no está en el array
+                    diccionario_columnas[key].append(column1)
+            else:
+                # Creo un nuevo registro ya que no existe
+                diccionario_columnas[key] = [column1]
+        # TODO > Por que tengo que guardar el alias de la columna????? Tenemos que imprimir el alias?
+        # else:
+        #     column2 = p[6] if p[1] != 'DISTINCT' else p[7]
+        #     if key in diccionario_columnas:
+        #         # Actualizo registro existente
+        #         diccionario_columnas[key].append(column2)
+        #     else:
+        #         # Creo un nuevo registro ya que no existe
+        #         diccionario_columnas[key] = [column2]
 
 
 def p_tablas(p):
@@ -257,6 +259,15 @@ def p_func_resumen(p):
                     | MAX PAREN_IZQ ID PUNTO ID PAREN_DER
                     | COUNT PAREN_IZQ ID PUNTO ID PAREN_DER
                     | COUNT PAREN_IZQ DISTINCT ID PUNTO ID PAREN_DER'''
+    key = p[3]
+    column1 = p[5]
+    if key in diccionario_columnas:
+        if column1 not in diccionario_columnas[key]:
+            # Actualizo registro existente si no está en el array
+            diccionario_columnas[key].append(column1)
+    else:
+        # Creo un nuevo registro ya que no existe
+        diccionario_columnas[key] = [column1]
 
 
 def p_error(p):
@@ -301,7 +312,3 @@ if __name__ == '__main__':
         if not s:
             continue
         yacc.parse(s)
-
-
-
-

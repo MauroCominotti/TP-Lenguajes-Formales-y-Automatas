@@ -60,9 +60,19 @@ No terminales: Minuscula
 
 ```SQL
 query : SELECT columnas FROM tablas
+      | SELECT columnas FROM tablas GROUP BY columnas_group_by
+      | SELECT columnas FROM tablas GROUP BY columnas_group_by ORDER BY columnas_order_by
       | SELECT columnas FROM tablas WHERE condiciones
+      | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by
+      | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by ORDER BY columnas_order_by
+      | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
+      | SELECT columnas FROM tablas WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
+      | SELECT columnas FROM tablas joins
+      | SELECT columnas FROM tablas joins GROUP BY columnas_group_by
+      | SELECT columnas FROM tablas joins GROUP BY columnas_group_by ORDER BY columnas_order_by
       | SELECT columnas FROM tablas joins WHERE condiciones
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by
+      | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by ORDER BY columnas_order_by
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having
       | SELECT columnas FROM tablas joins WHERE condiciones GROUP BY columnas_group_by HAVING condicion_having ORDER BY columnas_order_by
 
