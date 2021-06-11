@@ -327,7 +327,6 @@ def parse_select_statement(s):
 
 # If you want to test it in local just descomment this
 if __name__ == '__main__':
-    parser = yacc.yacc()
     while True:
         try:
             s = input('calc > ')
@@ -335,5 +334,4 @@ if __name__ == '__main__':
             break
         if not s:
             continue
-        yacc.parse(s)
-        # parse_select_statement(s)
+        parse_select_statement(s)
