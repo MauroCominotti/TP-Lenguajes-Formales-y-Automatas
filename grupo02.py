@@ -179,6 +179,10 @@ def p_condiciones(p):
                    | condiciones OR condiciones
                    | PAREN_IZQ condiciones OR condiciones PAREN_DER'''
 
+    if len(p) == 5:
+        key = p[1]
+        column = p[3]
+        addColumns(key, column)
 
 def p_condicion(p):
     '''condicion : ID PUNTO ID signo valor

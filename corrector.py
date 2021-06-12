@@ -349,6 +349,36 @@ successfulSamples = [
         {'customers': ['edad', 'id', 'pais', 'phone'],
          'phones_numbers': ['customer_id', 'phone', 'prefijo']}
     ),
+
+    ##############################################################################
+    # Testing SELECT, FROM - AS, LEFT JOIN - ON, SUBCONSULTA (IN)
+    ##############################################################################
+    (
+        # Should be ok
+        '''
+        SELECT c.pais, c.edad, phones_numbers.prefijo
+        FROM customers AS c
+        INNER JOIN phones_numbers ON c.id IN (SELECT p.nombre FROM providers p WHERE c.direccion > 18)
+        ''',
+        {'customers': ['direccion', 'edad', 'id', 'pais'],
+         'phones_numbers': ['prefijo'],
+         'providers': ['nombre']}
+    ),
+
+    ##############################################################################
+    # Testing SELECT, FROM - AS, LEFT JOIN - ON, SUBCONSULTA (NOT IN)
+    ##############################################################################
+    (
+        # Should be ok
+        '''
+        SELECT c.pais, c.edad, phones_numbers.prefijo
+        FROM customers AS c
+        INNER JOIN phones_numbers ON c.id NOT IN (SELECT p.nombre FROM providers p WHERE c.direccion > 18)
+        ''',
+        {'customers': ['direccion', 'edad', 'id', 'pais'],
+         'phones_numbers': ['prefijo'],
+         'providers': ['nombre']}
+    ),
 ]
 
 
